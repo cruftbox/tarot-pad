@@ -9,11 +9,10 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
-#include "Adafruit_ThinkInk.h"
+#include "../common/cards.h"
 
 // FeatherWing pins, as verified by hwcheck
 #define SD_CS     5
-#define SRAM_CS   6
 #define EPD_CS    9
 #define EPD_DC    10
 #define EPD_RESET -1
@@ -23,10 +22,6 @@
 #define BUTTON_C  13
 
 const uint8_t ROTATION = 3;  // card top at the red FPC tab end
-const uint16_t ART_W = 128;
-const uint16_t ART_H = 224;
-const size_t ART_BYTES = ((ART_W + 7) / 8) * ART_H;
-const char* DECKS_DIR = "/decks";
 const int MAX_DECKS = 16;
 // Deck to show at boot, if present; otherwise the first one found.
 const char* START_DECK = "rws";
@@ -53,105 +48,13 @@ int deckIdx = 0;
 int cardIdx = 0;
 uint8_t art[ART_BYTES];
 
-struct Card {
-  String name;
-  String keyword;
-};
-
-void findDecks() {
-  File root = SD.open(DECKS_DIR);
-  Serial.printf("open %s: %s, isDirectory %d\n", DECKS_DIR, root ? "ok" : "FAILED", root ? root.isDirectory() : 0);
-  if (!root || !root.isDirectory()) return;
-  while (File entry = root.openNextFile()) {
-    Serial.printf("  entry '%s' dir=%d\n", entry.name(), entry.isDirectory());
-    if (entry.isDirectory() && deckCount < MAX_DECKS) decks[deckCount++] = entry.name();
-    entry.close();
-  }
-  root.close();
-  // Directory order on FAT is creation order; sort so the cycle is predictable.
-  for (int i = 1; i < deckCount; i++)
-    for (int j = i; j > 0 && decks[j] < decks[j - 1]; j--) std::swap(decks[j], decks[j - 1]);
-}
-
-String field(const String& s, int& pos) {
-  // Minimal CSV field: handles the double-quoted fields Python's csv writer
-  // emits when a value contains a comma or quote.
-  String out;
-  if (pos < (int)s.length() && s[pos] == '"') {
-    pos++;
-    while (pos < (int)s.length()) {
-      if (s[pos] == '"') {
-        if (pos + 1 < (int)s.length() && s[pos + 1] == '"') { out += '"'; pos += 2; continue; }
-        pos++;
-        break;
-      }
-      out += s[pos++];
-    }
-  } else {
-    while (pos < (int)s.length() && s[pos] != ',') out += s[pos++];
-  }
-  if (pos < (int)s.length() && s[pos] == ',') pos++;
-  return out;
-}
-
-// Returns the number of cards in the deck, filling `card` if `index` is found.
-int readCards(const String& deck, int index, Card& card) {
-  File f = SD.open(String(DECKS_DIR) + "/" + deck + "/cards.csv");
-  if (!f) return 0;
-  f.readStringUntil('\n');  // header
-  int count = 0;
-  while (f.available()) {
-    String line = f.readStringUntil('\n');
-    line.trim();
-    if (line.length() == 0) continue;
-    count++;
-    int pos = 0;
-    if (field(line, pos).toInt() == index) {
-      card.name = field(line, pos);
-      card.keyword = field(line, pos);
-    }
-  }
-  f.close();
-  return count;
-}
-
-bool readArt(const String& deck, int index) {
-  char path[64];
-  snprintf(path, sizeof(path), "%s/%s/%02d.raw", DECKS_DIR, deck.c_str(), index);
-  File f = SD.open(path);
-  if (!f) return false;
-  size_t n = f.read(art, ART_BYTES);
-  f.close();
-  return n == ART_BYTES;
-}
-
-// Print text centered, wrapping at spaces to fit the width. Returns the next y.
-int16_t printWrapped(const String& text, int16_t y) {
-  const int16_t lineH = 12;
-  String rest = text;
-  while (rest.length()) {
-    String line = rest;
-    int16_t x1, y1;
-    uint16_t w, h;
-    display.getTextBounds(line, 0, 0, &x1, &y1, &w, &h);
-    while (w > display.width() && line.lastIndexOf(' ') > 0) {
-      line = line.substring(0, line.lastIndexOf(' '));
-      display.getTextBounds(line, 0, 0, &x1, &y1, &w, &h);
-    }
-    display.setCursor((display.width() - w) / 2, y);
-    display.print(line);
-    rest = rest.substring(line.length());
-    rest.trim();
-    y += lineH;
-  }
-  return y;
-}
 
 void showMessage(const char* msg) {
   display.clearBuffer();
   display.fillScreen(EPD_WHITE);
   display.setTextColor(EPD_BLACK);
-  printWrapped(msg, 120);
+  display.setTextSize(1);
+  printWrapped(display, msg, 120);
   display.display();
 }
 
@@ -164,22 +67,14 @@ void render() {
     cardIdx = cardIdx % count;
     readCards(deck, cardIdx, card);
   }
-  bool artOk = readArt(deck, cardIdx);
+  bool artOk = readArt(deck, cardIdx, art);
   Serial.printf("deck %s (%d cards), card %02d: %s / %s%s\n", deck.c_str(), count, cardIdx,
                 card.name.c_str(), card.keyword.c_str(), artOk ? "" : "  [art missing]");
 
   unsigned long tRead = millis();
-  display.clearBuffer();
-  display.fillScreen(EPD_WHITE);
-  unsigned long tClear = millis();
-  if (artOk) display.drawBitmap(0, 0, art, ART_W, ART_H, EPD_BLACK);
-  display.setTextColor(EPD_BLACK);
-  display.setTextSize(1);
-  int16_t y = printWrapped(card.name, ART_H + 14);
-  printWrapped(card.keyword, y + 10);
+  drawCard(display, art, artOk, card);
   unsigned long t0 = millis();
-  Serial.printf("  timing: SD read %lu ms, clear+fill %lu ms, bitmap+text %lu ms\n",
-                tRead - tStart, tClear - tRead, t0 - tClear);
+  Serial.printf("  timing: SD read %lu ms, draw %lu ms\n", tRead - tStart, t0 - tRead);
   display.display();
   Serial.printf("  display() %lu ms\n", millis() - t0);
 }
@@ -212,7 +107,7 @@ void setup() {
     showMessage("SD card not found");
     return;
   }
-  findDecks();
+  deckCount = findDecks(decks, MAX_DECKS);
   Serial.printf("%d decks:", deckCount);
   for (int i = 0; i < deckCount; i++) Serial.printf(" %s", decks[i].c_str());
   Serial.println();

@@ -97,27 +97,51 @@ hours" without one. Anything involving actual clock time or a time zone requires
 pulling NTP over WiFi on wake, which costs power. Treat timezone support as
 optional and design for the timer case first.
 
-## Unverified items to confirm on hardware
+## Hardware verification
 
 These are the things the datasheets do not settle. Confirm each before building
 on top of it.
 
-1. **Button pin mapping.** Adafruit's guide says the Wing's A/B/C buttons land on
-   D11, D12, D13 on many Feathers but that this varies by board. Confirm the
-   actual GPIO numbers on the ESP32-S3 Feather.
-2. **RTC-capable GPIOs.** Deep sleep wake on ESP32-S3 requires the wake pin to be
-   in the RTC range (GPIO 0 through 21). If the button pins fall outside that
-   range, wake-on-button will not work as wired and the design needs to change.
-3. **Buttons have no pull-up resistors.** Enable internal pullups in software.
-4. **SD card mounting.** There is a documented failure case with this exact
-   Feather plus FeatherWing combination where the card would not mount until
-   reformatted as plain FAT32, rather than using the SD Association's formatting
-   tool. If the card fails to mount, reformat before debugging code.
-5. **Measured deep sleep current.** Verify against the 100uA spec with the
+### Results (unit 1, hwcheck firmware, 2026-09-17)
+
+Verified with `firmware/src/hwcheck` on unit 1 only. Unit 2 has not been run.
+
+1. **Button pin mapping: confirmed.** A = GPIO11, B = GPIO12, C = GPIO13 (the
+   D-numbers equal GPIO numbers on this Feather). Buttons are active LOW. Each
+   press produced one clean LOW/HIGH transition at 10 ms polling; no bounce was
+   observed. The A/B/C labels come from the order the buttons were pressed,
+   since the firmware reports only GPIO numbers.
+2. **RTC-capable GPIOs: confirmed.** GPIO 11, 12, and 13 are all in the RTC range
+   (GPIO 0 through 21), so wake-on-button works as wired.
+3. **Pull-ups: internal pull-ups work.** With `INPUT_PULLUP`, all watched pins
+   (GPIO 8, 11-18) idle HIGH. Whether the Wing has external pull-ups was not
+   tested; keep internal pull-ups enabled.
+4. **SD card mounting: confirmed.** The card mounted on the first try without
+   reformatting: SDHC, 7454 MB, root directory empty.
+5. **FeatherWing SRAM: confirmed.** Write/read at three addresses matched.
+6. **Display class: confirmed.** `ThinkInk_290_Grayscale4_FPC7519` with
+   `setColorBuffer(1, true)` and `setBlackBuffer(0, true)` works in 4-level
+   grayscale. Black text is solid, and a black/dark/light/white ramp shows four
+   distinct shades in the correct order. Size-1 (1 px stroke) dark gray text is
+   faint. `display()` took 10.8 s, but EPD_BUSY is not connected, so that is a
+   fixed library wait, not a measured refresh time.
+7. **Fuel gauge: confirmed as MAX17048** at I2C 0x36 (chip id 0xC), the only I2C
+   device found. Battery read 0.000 V / 0.0 %, probably because no LiPo was
+   attached (not confirmed). Battery readings are still untested.
+
+### Still open
+
+1. **Measured deep sleep current.** Verify against the 100uA spec with the
    display and SD card attached, since the real number drives battery sizing.
-6. **Header seating.** PID 3002 short male headers are designed to pair with
+2. **Header seating.** PID 3002 short male headers are designed to pair with
    Adafruit's short female headers. The Wing ships with factory-installed
-   sockets of unconfirmed height. Confirm the pins seat firmly.
+   sockets of unconfirmed height. The SRAM and SD tests show electrical contact
+   on unit 1; mechanical fit has not been assessed.
+3. **Unit 2.** Run hwcheck on the second unit.
+4. **Battery readings.** Re-check the MAX17048 voltage and percentage with a
+   LiPo attached.
+5. **Real refresh time.** EPD_BUSY is not available, so refresh time can only be
+   observed by eye or estimated from the library's fixed wait.
 
 ## Toolchain decision
 

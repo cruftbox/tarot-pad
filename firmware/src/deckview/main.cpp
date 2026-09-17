@@ -29,7 +29,21 @@ const size_t ART_BYTES = ((ART_W + 7) / 8) * ART_H;
 const char* DECKS_DIR = "/decks";
 const int MAX_DECKS = 16;
 
-ThinkInk_290_Grayscale4_FPC7519 display(EPD_DC, EPD_RESET, EPD_CS, SRAM_CS, EPD_BUSY);
+// The Wing leaves the panel's BUSY line unconnected, so the driver waits a fixed
+// default_refresh_delay (9000 ms for grayscale) instead of watching the panel.
+// 2000 ms drew cleanly on unit 2 with heavy-black and mostly-white cards
+// (refreshtest, 2026-09-17); it is protected, so reach it through a subclass.
+class CardDisplay : public ThinkInk_290_Grayscale4_FPC7519 {
+ public:
+  using ThinkInk_290_Grayscale4_FPC7519::ThinkInk_290_Grayscale4_FPC7519;
+  void setRefreshDelay(uint16_t ms) { default_refresh_delay = ms; }
+};
+
+const uint16_t REFRESH_DELAY_MS = 2000;
+
+// Framebuffer in ESP32 RAM (SRAM CS = -1), not the Wing's SPI SRAM: with SRAM,
+// every pixel costs four SPI transactions and a full-screen fill took ~3.9 s.
+CardDisplay display(EPD_DC, EPD_RESET, EPD_CS, -1, EPD_BUSY);
 
 String decks[MAX_DECKS];
 int deckCount = 0;
@@ -141,6 +155,7 @@ void showMessage(const char* msg) {
 
 void render() {
   const String& deck = decks[deckIdx];
+  unsigned long tStart = millis();
   Card card;
   int count = readCards(deck, cardIdx, card);
   if (count > 0 && cardIdx >= count) {
@@ -151,14 +166,18 @@ void render() {
   Serial.printf("deck %s (%d cards), card %02d: %s / %s%s\n", deck.c_str(), count, cardIdx,
                 card.name.c_str(), card.keyword.c_str(), artOk ? "" : "  [art missing]");
 
+  unsigned long tRead = millis();
   display.clearBuffer();
   display.fillScreen(EPD_WHITE);
+  unsigned long tClear = millis();
   if (artOk) display.drawBitmap(0, 0, art, ART_W, ART_H, EPD_BLACK);
   display.setTextColor(EPD_BLACK);
   display.setTextSize(1);
   int16_t y = printWrapped(card.name, ART_H + 14);
   printWrapped(card.keyword, y + 10);
   unsigned long t0 = millis();
+  Serial.printf("  timing: SD read %lu ms, clear+fill %lu ms, bitmap+text %lu ms\n",
+                tRead - tStart, tClear - tRead, t0 - tClear);
   display.display();
   Serial.printf("  display() %lu ms\n", millis() - t0);
 }
@@ -181,6 +200,7 @@ void setup() {
   SPI.begin();
   // THINKINK_MONO left the previous image ghosted; grayscale init clears fully.
   display.begin(THINKINK_GRAYSCALE4);
+  display.setRefreshDelay(REFRESH_DELAY_MS);
   display.setColorBuffer(1, true);
   display.setBlackBuffer(0, true);
   display.setRotation(ROTATION);

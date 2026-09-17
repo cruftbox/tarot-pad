@@ -12,8 +12,8 @@
 #define EPD_RESET -1
 #define EPD_BUSY  -1
 
-// Portrait. Which of the two portrait rotations is "up" is not yet decided.
-const uint8_t ROTATION = 1;
+// Portrait. 3 puts the card top at the red FPC tab end (1 was the USB-C end).
+const uint8_t ROTATION = 3;
 
 ThinkInk_290_Grayscale4_FPC7519 display(EPD_DC, EPD_RESET, EPD_CS, SRAM_CS, EPD_BUSY);
 

@@ -13,3 +13,7 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Image tool working data
+tools/scans/
+tools/out/

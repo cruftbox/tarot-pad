@@ -32,7 +32,10 @@ const gpio_num_t BUTTON_B = GPIO_NUM_12;  // new card
 const gpio_num_t BUTTON_C = GPIO_NUM_13;  // next deck
 
 const uint8_t ROTATION = 3;            // card top at the red FPC tab end
-const uint16_t REFRESH_DELAY_MS = 2000;  // see refreshtest; driver default is 9000
+const uint16_t REFRESH_DELAY_MS = 2000;   // see refreshtest; driver default is 9000
+// Menus are plain black text, the easiest case for the panel, so they get a
+// shorter wait than the cards.
+const uint16_t MENU_REFRESH_MS = 500;
 const int MAX_DECKS = 16;
 const int MAX_CARDS = 78;
 const uint8_t INTERVALS[] = {6, 12, 24, 48};
@@ -91,6 +94,7 @@ void showCard() {
   Serial.printf("deck %s card %02d: %s / %s%s\n", decks[deckIdx].c_str(), rtcCard,
                 card.name.c_str(), card.keyword.c_str(), artOk ? "" : "  [art missing]");
   drawCard(display, art, artOk, card);
+  display.setRefreshDelay(REFRESH_DELAY_MS);
   display.display();
 }
 
@@ -179,7 +183,10 @@ void drawSettings(int cursor, const String& battery) {
   display.print("A move  B change");
   display.setCursor(8, display.height() - 18);
   display.print("C exit");
+  display.setRefreshDelay(MENU_REFRESH_MS);
+  unsigned long t0 = millis();
   display.display();
+  Serial.printf("settings display() %lu ms\n", millis() - t0);
 }
 
 void settingsScreen() {

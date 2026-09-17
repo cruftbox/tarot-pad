@@ -102,28 +102,32 @@ optional and design for the timer case first.
 These are the things the datasheets do not settle. Confirm each before building
 on top of it.
 
-### Results (unit 1, hwcheck firmware, 2026-09-17)
+### Results (both units, hwcheck firmware, 2026-09-17)
 
-Verified with `firmware/src/hwcheck` on unit 1 only. Unit 2 has not been run.
+Verified with `firmware/src/hwcheck` on both units. Unit 1 is USB serial
+`D0:CF:13:0A:9C:00`; unit 2 is `D0:CF:13:0A:A6:88`. Results are the same on
+both unless noted.
 
 1. **Button pin mapping: confirmed.** A = GPIO11, B = GPIO12, C = GPIO13 (the
    D-numbers equal GPIO numbers on this Feather). Buttons are active LOW. Each
    press produced one clean LOW/HIGH transition at 10 ms polling; no bounce was
    observed. The A/B/C labels come from the order the buttons were pressed,
-   since the firmware reports only GPIO numbers.
+   since the firmware reports only GPIO numbers. On unit 2 the A press happened
+   before capture started, so only its GPIO11 release was recorded.
 2. **RTC-capable GPIOs: confirmed.** GPIO 11, 12, and 13 are all in the RTC range
    (GPIO 0 through 21), so wake-on-button works as wired.
 3. **Pull-ups: internal pull-ups work.** With `INPUT_PULLUP`, all watched pins
    (GPIO 8, 11-18) idle HIGH. Whether the Wing has external pull-ups was not
    tested; keep internal pull-ups enabled.
 4. **SD card mounting: confirmed.** The card mounted on the first try without
-   reformatting: SDHC, 7454 MB, root directory empty.
+   reformatting: SDHC, root directory empty. Unit 1 card 7454 MB, unit 2 card
+   7456 MB.
 5. **FeatherWing SRAM: confirmed.** Write/read at three addresses matched.
 6. **Display class: confirmed.** `ThinkInk_290_Grayscale4_FPC7519` with
    `setColorBuffer(1, true)` and `setBlackBuffer(0, true)` works in 4-level
    grayscale. Black text is solid, and a black/dark/light/white ramp shows four
-   distinct shades in the correct order. Size-1 (1 px stroke) dark gray text is
-   faint. `display()` took 10.8 s, but EPD_BUSY is not connected, so that is a
+   distinct shades in the correct order on both units. On unit 1, size-1 (1 px
+   stroke) dark gray text is faint; not checked separately on unit 2. `display()` took 10.8 s, but EPD_BUSY is not connected, so that is a
    fixed library wait, not a measured refresh time.
 7. **Fuel gauge: confirmed as MAX17048** at I2C 0x36 (chip id 0xC), the only I2C
    device found. Battery read 0.000 V / 0.0 %, probably because no LiPo was
@@ -136,11 +140,10 @@ Verified with `firmware/src/hwcheck` on unit 1 only. Unit 2 has not been run.
 2. **Header seating.** PID 3002 short male headers are designed to pair with
    Adafruit's short female headers. The Wing ships with factory-installed
    sockets of unconfirmed height. The SRAM and SD tests show electrical contact
-   on unit 1; mechanical fit has not been assessed.
-3. **Unit 2.** Run hwcheck on the second unit.
-4. **Battery readings.** Re-check the MAX17048 voltage and percentage with a
+   on both units; mechanical fit has not been assessed.
+3. **Battery readings.** Re-check the MAX17048 voltage and percentage with a
    LiPo attached.
-5. **Real refresh time.** EPD_BUSY is not available, so refresh time can only be
+4. **Real refresh time.** EPD_BUSY is not available, so refresh time can only be
    observed by eye or estimated from the library's fixed wait.
 
 ## Toolchain decision

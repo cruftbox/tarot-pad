@@ -28,6 +28,8 @@ const uint16_t ART_H = 224;
 const size_t ART_BYTES = ((ART_W + 7) / 8) * ART_H;
 const char* DECKS_DIR = "/decks";
 const int MAX_DECKS = 16;
+// Deck to show at boot, if present; otherwise the first one found.
+const char* START_DECK = "rws";
 
 // The Wing leaves the panel's BUSY line unconnected, so the driver waits a fixed
 // default_refresh_delay (9000 ms for grayscale) instead of watching the panel.
@@ -218,6 +220,8 @@ void setup() {
     showMessage("No decks in /decks");
     return;
   }
+  for (int i = 0; i < deckCount; i++)
+    if (decks[i] == START_DECK) deckIdx = i;
   cardIdx = esp_random() % 78;
   render();
 }

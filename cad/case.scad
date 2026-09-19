@@ -61,9 +61,17 @@ button_hole_d = 5.0;     // clearance for a fingertip or a printed plunger
 usb_w = 9.5;             // connector 8.9 wide plus clearance
 usb_h = 4.0;             // connector 3.3 high plus clearance
 // From the outer edge of the screw tab to the start of the connector, across
-// the board width. Measured 18 on 2026-09-17; the printed opening sat 0.5 mm
-// too far from the button side, so this is the fitted value.
-usb_from_tab_edge = 17.5;
+// the board width, on the button side. Measured 18 on 2026-09-17. The 17.5
+// fitted on 2026-09-18 moved it the wrong way: the note it came from read the
+// error backwards, and lowering this walks the opening TOWARDS the button side
+// because the cut starts at wall + fit + usb_from_tab_edge and the buttons are
+// at low y. Measured off the 2026-09-19 print photo, scaled by the known 9.5 mm
+// opening: 1.54 mm of the connector hid behind the wall on the high-y side and
+// 2.15 mm of the opening stood empty on the button side, so the opening wants
+// 1.84 mm further from the buttons. Note the clearance is all on one side -
+// usb_w is 0.6 wider than the connector and the cut starts at the connector's
+// start - so this centres it at 19.34 rather than leaving it flush.
+usb_from_tab_edge = 19.3;
 usb_from_back = 1.0;     // measured, centre above the back of the Wing PCB
 wing_pcb_t = 1.6;        // standard board thickness, not measured
 // The glass covers the board body but not the tabs, so the tab surface sits a

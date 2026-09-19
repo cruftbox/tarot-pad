@@ -17,7 +17,7 @@
 // hardware before printing. Everything else comes from Adafruit's published
 // dimensions or this project's brief.
 
-part = "all";  // [all, front, back, stand]
+part = "all";  // [all, front, back, stand, plungers]
 
 /* ---------------------------------------------------------------- hardware */
 
@@ -35,9 +35,10 @@ wing_body_w = 37;
 feather_l = 52.3;
 feather_w = 22.7;
 
-// Measured 2026-09-17: display glass to the highest point on the back, over
-// the Feather with headers and JST plug. Sets the back depth and stand slot.
-stack_t = 20;
+// Display glass to the highest point on the back, which is the battery
+// connector beside USB-C. Sets the back depth and the stand slot. Measured 20
+// on 2026-09-17 and 18 on 2026-09-18; the user chose 18.
+stack_t = 18;
 
 // Visible display area. Length and the offset from the ribbon-end edge were
 // measured 2026-09-17; the width is derived from the 296 x 128 pixel aspect
@@ -59,10 +60,19 @@ button_hole_d = 5.0;     // clearance for a fingertip or a printed plunger
 // USB-C opening on the Feather's short edge.
 usb_w = 9.5;             // connector 8.9 wide plus clearance
 usb_h = 4.0;             // connector 3.3 high plus clearance
-// Measured 2026-09-17: 18 mm from the outer edge of the screw tab to the start
-// of the connector, across the board width.
-usb_from_tab_edge = 18;
+// From the outer edge of the screw tab to the start of the connector, across
+// the board width. Measured 18 on 2026-09-17; the printed opening sat 0.5 mm
+// too far from the button side, so this is the fitted value.
+usb_from_tab_edge = 17.5;
 usb_from_back = 1.0;     // measured, centre above the back of the Wing PCB
+wing_pcb_t = 1.6;        // standard board thickness, not measured
+// The glass covers the board body but not the tabs, so the tab surface sits a
+// glass thickness behind the face that rests on the bezel lip, and a post has
+// to cross that step before it enters a tab hole.
+// TODO confirm: glass/panel thickness, estimated.
+glass_t = 1.2;
+post_above_tab = 1.2;  // how far a post stands into the 1.6 mm tab hole
+board_t = glass_t + wing_pcb_t;   // glass face to the back of the Wing PCB
 // Which end of the board USB-C is on. Confirmed 2026-09-18: NOT the ribbon end,
 // so it sits at the far end from the display's 8 mm margin (window_offset_l).
 // The two Feather guide holes were measured from the USB-C end, so their posts
@@ -71,12 +81,18 @@ usb_at_x0 = false;
 
 // Battery: 36 x 17 x 7.8 mm (Adafruit 3898) on its extension cable, so it sits
 // loose inside. The printed pocket walls fouled the boards and were removed.
+// It needs the full interior depth, so the raised floor that holds the stack
+// forward runs only platform_l from the USB-C end.
+platform_l = 50;
 
 /* ------------------------------------------------------------------- case */
 
 wall = 2.0;          // shell wall thickness
 bezel = 2.5;         // front lip over the display edge
-fit = 1.0;           // clearance around the PCB (0.35 printed too tight)
+fit = 1.5;           // clearance around the PCB. 0.35 and then 1.0 both printed
+                     // too tight: at 1.0 the board barely went in and the hook
+                     // arms, which stand clip_t - clip_pocket proud of the wall,
+                     // left it only 0.2 mm to slide past.
 front_depth = 4.5;   // inside depth of the front shell
 corner_r = 3.5;      // outside corner radius
 $fn = 48;
@@ -85,12 +101,26 @@ $fn = 48;
 // the case is the measured depth below the glass plus the face plate and lip.
 button_from_face = button_from_glass + wall + bezel;
 
+// Glass face to the centre of the USB-C connector, measured 2026-09-18, the
+// same convention as button_from_glass. Two earlier attempts were wrong:
+// taking usb_from_back from the back shell's floor put it 17 mm too deep, and
+// deriving it from the back of the Wing PCB put it up at the joint. The
+// connector is on the Feather, deep in the stack, beside the battery connector
+// the platform bears on at stack_t = 18.
+// Measured 15.0 on 2026-09-18, but the printed opening sat 1 mm too low, so
+// this is the fitted value. The 1 mm is unexplained - the buttons and the tab
+// supports, which reference the same glass plane, both fit - so it is most
+// likely in the measurement or in where the glass actually seats on the lip.
+usb_from_glass = 14.0;
+usb_from_face = usb_from_glass + wall + bezel;
+
 // Mounting tabs: posts in the front shell poke through the PCB's corner holes
 // to locate the boards. The hole pattern is from the brief and matches the
 // measured 80 x 47 outline with the centres ~2.5-2.9 mm in from each edge.
 tab_pitch_l = 74.3;
 tab_pitch_w = 42;
 post_d = 2.3;        // clearance in the 2.5 mm holes
+tab_post_d = 6.0;    // support pillars under the far tabs, in the back shell
 
 // The two Feather guide holes beside USB-C, measured 2026-09-18: centres 2 mm
 // in from the USB-C end edge and 15 mm in from a 47 mm outer (tab-tip) edge,
@@ -100,13 +130,6 @@ post_d = 2.3;        // clearance in the 2.5 mm holes
 // were measured, and because posts for them could rise from the back shell.
 guide_from_end = 2;
 guide_from_side = 15;
-
-// The glass covers the board body but not the tabs, so the tab surface sits a
-// glass thickness behind the face that rests on the bezel lip, and a post has
-// to cross that step before it enters a tab hole.
-// TODO confirm: glass/panel thickness, estimated.
-glass_t = 1.2;
-post_above_tab = 1.2;  // how far a post stands into the 1.6 mm tab hole
 
 // Snap-fit: hooks on the back shell catch slots in the front walls. clip_rise
 // fixes both ends of the joint - the hook stands that far above the back's rim
@@ -174,10 +197,15 @@ module shell(h, depth) {
   }
 }
 
-// Snap clips. The button-side pair has to clear the openings at 23/43/63 - at
-// the quarter points the hooks stood 1.6 mm behind the A and C holes - so it
-// sits in the gaps between them. The far side keeps the quarter points.
-clip_x_button = [33, 53];
+// Snap clips. The button-side pair has to clear the button openings - at the
+// quarter points the hooks stood 1.6 mm behind the A and C holes - so it sits
+// in the gaps between them. The far side keeps the quarter points.
+// Both pairs MUST be symmetric about body_l / 2: the back is turned over about
+// the short axis, so x mirrors, and a pair that is not symmetric lands on the
+// wrong slots. Written as literals they survived only while they happened to
+// add up to body_l, and widening the case by 1 mm broke them.
+clip_x_spread = 10;  // from the centre, into the gaps between the buttons
+clip_x_button = [body_l / 2 - clip_x_spread, body_l / 2 + clip_x_spread];
 clip_x_far = [body_l * 0.25, body_l * 0.75];
 
 module clip_positions() {
@@ -238,8 +266,16 @@ module back() {
     // USB-C opening in the short wall, at the mirrored end (see the header).
     translate([usb_at_x0 ? body_l - wall - 1 : -1,
                wall + fit + usb_from_tab_edge,
-               wall + usb_from_back - usb_h / 2])
+               back_depth - (usb_from_face - front_depth - wall) - usb_h / 2])
       cube([wall + 2, usb_w, usb_h]);
+
+    // Counterbores for the plunger flanges, in the wall's inner face.
+    for (p = button_positions)
+      translate([wall + fit + p - plunger_flange_w / 2 - plunger_clear,
+                 neck_inset + wall - plunger_pocket_t,
+                 back_depth - seam_offset - plunger_flange_back - plunger_clear])
+        cube([plunger_flange_w + 2 * plunger_clear, plunger_pocket_t + 1,
+              plunger_flange_back + plunger_clear + seam_offset]);
 
     // Button openings through the long wall. The shells meet rim to rim, so a
     // depth measured from the display face maps to the back shell like this.
@@ -247,6 +283,26 @@ module back() {
       translate([wall + fit + p, neck_inset - 1, back_depth - (button_from_face - front_depth - wall)])
         rotate([-90, 0, 0]) cylinder(d = button_hole_d, h = wall + 2);
   }
+
+  // Raised floor over the first platform_l from the USB-C end. It fills
+  // back_clear so the deepest part of the stack - the battery connector beside
+  // USB-C - bears on it and the board cannot lift off the front's bezel lip.
+  // The rest of the length stays at full depth for the battery.
+  intersection() {
+    translate([0, 0, wall]) linear_extrude(back_clear) case_profile(wall);
+    translate([usb_at_x0 ? body_l - wall - platform_l : wall, -1, -1])
+      cube([platform_l, body_w + 2, back_depth + 2]);
+  }
+
+  // Posts under the tabs at the end away from USB-C. The platform holds the
+  // USB end; without these the board tips off it. They meet the back of the
+  // tabs, so their height leans on board_t and therefore on the estimated
+  // glass_t.
+  tab_post_top = front_depth + wall + back_depth - (wall + bezel + board_t);
+  for (y = [(body_w - tab_pitch_w) / 2, (body_w + tab_pitch_w) / 2])
+    translate([usb_at_x0 ? (body_l - tab_pitch_l) / 2 : (body_l + tab_pitch_l) / 2,
+               y, wall])
+      cylinder(d = tab_post_d, h = tab_post_top - wall);
 
   // Snap hooks: an arm sunk into the wall, with a lip at the tip that tapers to
   // flush so the halves cam together instead of having to be forced.
@@ -291,11 +347,55 @@ module stand() {
   }
 }
 
+/* --------------------------------------------------------------- plungers */
+
+// The switches cannot be reached with a finger: wall + fit leaves them 3.5 mm
+// down a 5 mm hole. A plunger drops into each hole from inside before the board
+// goes in, and the flange cannot pass back out through the hole.
+//
+// The flange sits in a counterbore INSIDE the wall, not in the gap in front of
+// the switch. Sitting in the gap, a 1.0 mm flange held every switch down - the
+// actuators stand proud of the board edge, so that gap is smaller than fit.
+// Inside the wall the rest position no longer depends on that unknown at all.
+//
+// The flange is a plate, not a disc: the hole is clipped where it crosses the
+// shell joint, so a disc big enough to catch would reach past the joint, where
+// there is no wall to catch it. It reaches far on the side away from the joint
+// and stops short of it on the other.
+plunger_clear = 0.2;         // all round, inside the hole
+plunger_flange_w = 7.0;      // across the wall; clears the clip pockets by 0.9
+plunger_flange_back = 3.5;   // how far the flange reaches away from the joint
+plunger_flange_t = 1.0;
+plunger_pocket_t = 1.0;      // counterbore depth in the wall's inner face
+plunger_proud = 0.5;         // how far it stands out of the case at rest
+
+seam_offset = button_from_face - (front_depth + wall);  // hole is clipped here
+plunger_flange_seam = seam_offset - plunger_clear;
+plunger_shaft_l = wall - plunger_pocket_t + plunger_proud;
+
+module plunger() {
+  translate([-plunger_flange_back, -plunger_flange_w / 2, 0])
+    cube([plunger_flange_back + plunger_flange_seam, plunger_flange_w,
+          plunger_flange_t]);
+  translate([0, 0, plunger_flange_t])
+    intersection() {
+      cylinder(d = button_hole_d - 2 * plunger_clear, h = plunger_shaft_l);
+      translate([-button_hole_d, -button_hole_d, 0])
+        cube([button_hole_d + plunger_flange_seam, 2 * button_hole_d,
+              plunger_shaft_l]);
+    }
+}
+
+module plungers() {
+  for (i = [0 : 2]) translate([i * (plunger_flange_w + 3), 0, 0]) plunger();
+}
+
 /* ----------------------------------------------------------------- render */
 
 if (part == "front") front();
 else if (part == "back") back();
 else if (part == "stand") stand();
+else if (part == "plungers") plungers();
 else {
   front();
   translate([0, body_w + 10, 0]) back();

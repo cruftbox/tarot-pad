@@ -370,7 +370,17 @@ module stand() {
 // shell joint, so a disc big enough to catch would reach past the joint, where
 // there is no wall to catch it. It reaches far on the side away from the joint
 // and stops short of it on the other.
-plunger_clear = 0.2;         // all round, inside the hole
+plunger_clear = 0.2;         // all round, inside the hole. Printed and confirmed
+                             // good: the plunger slides freely with the front off.
+// Clearance at the SEAM only, between the plunger's top faces and the front
+// shell's rim. Separate from plunger_clear because 0.2 printed as a pinch: with
+// the front on, its rim clamped the plunger and no button would move, while the
+// same plunger slid freely with the front off. The model was right - the faces
+// were 0.2 apart - but 0.2 is not a printable sliding gap across a joint between
+// two separately printed parts, where elephant's foot on the rim or one proud
+// top layer on the flange closes it. Only the plunger shrinks, so this reprints
+// three small parts and leaves the front and back alone.
+plunger_seam_clear = 0.6;
 plunger_flange_w = 7.0;      // across the wall; clears the clip pockets by 0.9
 plunger_flange_back = 3.5;   // how far the flange reaches away from the joint
 plunger_flange_t = 1.0;
@@ -378,7 +388,7 @@ plunger_pocket_t = 1.0;      // counterbore depth in the wall's inner face
 plunger_proud = 0.5;         // how far it stands out of the case at rest
 
 seam_offset = button_from_face - (front_depth + wall);  // hole is clipped here
-plunger_flange_seam = seam_offset - plunger_clear;
+plunger_flange_seam = seam_offset - plunger_seam_clear;
 plunger_shaft_l = wall - plunger_pocket_t + plunger_proud;
 
 module plunger() {

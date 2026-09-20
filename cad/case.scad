@@ -166,6 +166,11 @@ back_clear = 2.0;
 back_depth = bezel + stack_t + back_clear - front_depth + wall;
 body_l = inner_l + 2 * wall;
 body_w = inner_w + 2 * wall;
+// Assembled thickness, front face to back floor. The stand slot is sized from
+// this and must NOT be rebuilt out of stack_t: the interior is bezel + stack_t
+// + back_clear, so a slot cut to stack_t + 2 * wall comes out 4.5 mm too thin
+// and the case will not go in at all. Measured 26.5 on the assembled render.
+case_t = front_depth + wall + back_depth;
 
 // The case necks down to the board body between the tabs. Sized to the full
 // tab outline, the wall sat 5 mm out from the button faces and a finger had to
@@ -174,6 +179,41 @@ wide_end_l = 12;     // full-width section at each end (the tabs are 5 mm wide)
 neck_w = wing_body_w + 2 * fit + 2 * wall;
 neck_inset = (body_w - neck_w) / 2;   // how far each long side pulls in
 neck_r = 2.0;        // fillet at the reentrant corners of the step
+
+/* -------------------------------------------------------------- engraving */
+
+// Recessed motifs, never raised: a recess prints clean on a vertical wall and
+// on the build-plate face alike, and the earlier raised trials on the front
+// needed support. 0.6 mm is two or three layers deep - enough to read, shallow
+// enough that it never reaches the inside of a 2 mm wall.
+engrave_d = 0.6;
+
+// The back shell turns over about the short axis to assemble. That is a
+// ROTATION, not a mirror, so a glyph laid out in these coordinates reads the
+// same way round on the finished case and nothing needs flipping. What does
+// move is which END is which: the USB opening is cut at the x0 end here, so the
+// top of the case - the end that points up in the stand - is x = body_l.
+
+// Both long walls carry the identical four-suit row. It sits LOW so the button
+// side can repeat it unchanged underneath its three holes, whose bottoms are at
+// z 15.5. Centred on body_l / 2 at a 15 mm pitch.
+wall_icons   = ["cup", "sword", "wand", "pentacle"];
+wall_icon_mm = 11;
+wall_icon_x  = [21, 36, 51, 66];
+wall_icon_z  = 7.5;
+
+// Top end wall, away from USB. 12.5 mm at a 17 mm pitch leaves 4.5 mm between
+// glyphs and stays off the corner_r rounding at each side. An earlier 14 mm at
+// a 13.5 pitch actually OVERLAPPED.
+end_icons   = ["moon", "sun", "star"];
+end_icon_mm = 12.5;
+end_icon_y  = [10, 27, 44];
+end_icon_z  = 10;
+
+// Stand rear, sized to the face the hull actually leaves - see stand().
+stand_icons   = ["moon", "sun", "star"];
+stand_icon_mm = 14;
+stand_icon_x  = [13, 31, 49];
 
 // Rounded rectangle, and the slab that extrudes it.
 module rrect(l, w, r) {
@@ -290,6 +330,21 @@ module back() {
     for (p = button_positions)
       translate([wall + fit + p, neck_inset - 1, back_depth - (button_from_face - front_depth - wall)])
         rotate([-90, 0, 0]) cylinder(d = button_hole_d, h = wall + 2);
+
+    // Engraved motifs. Local +z of engrave() is the face's outward normal, so
+    // each rotation below just aims it: -y for the button wall, +y for the far
+    // wall, +-x for an end wall.
+    for (i = [0:3]) {
+      translate([wall_icon_x[i], neck_inset, wall_icon_z])
+        rotate([90, 0, 0]) engrave(wall_icons[i], wall_icon_mm);
+      translate([wall_icon_x[i], body_w - neck_inset, wall_icon_z])
+        rotate([0, 0, 180]) rotate([90, 0, 0]) engrave(wall_icons[i], wall_icon_mm);
+    }
+    // The end away from USB, which points up in the stand.
+    for (i = [0:2])
+      translate([usb_at_x0 ? 0 : body_l, end_icon_y[i], end_icon_z])
+        rotate([0, 0, usb_at_x0 ? -90 : 90]) rotate([90, 0, 0])
+          engrave(end_icons[i], end_icon_mm);
   }
 
   // Raised floor over the first platform_l from the USB-C end. It fills
@@ -331,27 +386,69 @@ module back() {
 stand_angle = 20;        // lean back from vertical
 stand_grip = 26;         // how far up the case the sleeve holds it
 stand_wall = 3;
-stand_slop = 0.6;        // slide clearance around the case
+stand_slop = 1.0;        // slide clearance around the case. 0.6 printed too tight
+// Internal corner radius of the slot. The case's cross-section here has SHARP
+// corners: both shells are straight prisms, and corner_r rounds the case's
+// VERTICAL edges, not the ones where a side wall meets the front face or the
+// back floor. So a rounded slot corner cuts across the case's square one, and
+// at 3.0 it blocked the case by 0.394 mm even though every flat had its 0.6 mm.
+// The corner clears only while sqrt(2) * (r - stand_slop) <= r, i.e. r <= 3.41
+// * stand_slop; 1.5 against a 1.0 slop clears by 0.23 mm.
+stand_slot_r = 1.5;
+
+// The USB-C end goes DOWN in the stand (user, 2026-09-19), which keeps the card
+// upright at the firmware's setRotation(3). It also puts the port on the slot
+// floor, so the unit comes out of the stand to charge.
+// With that end down, this is how far the window's lower edge sits above the
+// case's bottom. The front of the sleeve has to stop below it or it covers the
+// bottom of the card - at the old fixed 8 mm it buried 2.5 mm of window.
+window_from_usb_end = body_l - (wall + fit + window_offset_l + window_l);  // 5.5
+stand_lip = window_from_usb_end - 1.5;
 
 module stand() {
-  slot_l = body_w + 2 * stand_slop;              // case width
-  slot_t = stack_t + 2 * wall + 2 * stand_slop;  // case thickness
+  slot_l = body_w + 2 * stand_slop;    // case width
+  slot_t = case_t + 2 * stand_slop;    // case THICKNESS - see case_t
+  sleeve_t = slot_t + 2 * stand_wall;
   base_l = slot_l + 2 * stand_wall;
-  base_d = slot_t + 2 * stand_wall + 14;         // depth on the desk, for stability
+  base_d = sleeve_t + 14;              // depth on the desk, for stability
+  // The sleeve turns by MINUS stand_angle. Turning it the other way put the
+  // top over on the same side as the cut-down wall, which tipped the display
+  // 20 degrees face-down instead of leaning it back, and left the base's extra
+  // depth on the side the case does not lean towards. This way the display
+  // faces -y and leans back, and base_d runs behind it where the weight goes.
+  // The lift sets the sleeve's rear bottom edge on the desk and the hull fills
+  // the wedge under the raised front.
+  lift = sleeve_t * sin(stand_angle);
+  // The rear exterior: base back edge -> sleeve top edge.
+  rear_y0 = base_d;              rear_z0 = stand_wall;
+  rear_y1 = sleeve_t * cos(stand_angle) + stand_grip * sin(stand_angle);
+  rear_z1 = stand_grip * cos(stand_angle);
+  rear_len  = norm([rear_y1 - rear_y0, rear_z1 - rear_z0]);
+  rear_lean = atan2(rear_y0 - rear_y1, rear_z1 - rear_z0);
 
   difference() {
     hull() {
       slab(base_l, base_d, stand_wall, 4);
-      rotate([stand_angle, 0, 0]) slab(base_l, slot_t + 2 * stand_wall, stand_grip, 4);
+      translate([0, 0, lift]) rotate([-stand_angle, 0, 0])
+        slab(base_l, sleeve_t, stand_grip, 4);
     }
-    // Slot the case slides down into.
-    rotate([stand_angle, 0, 0])
+    translate([0, 0, lift]) rotate([-stand_angle, 0, 0]) {
+      // Slot the case slides down into.
       translate([stand_wall, stand_wall, stand_wall])
-        slab(slot_l, slot_t, stand_grip + 20, 3);
-    // Cut the front of the sleeve down so the lower display edge stays visible.
-    rotate([stand_angle, 0, 0])
-      translate([stand_wall + 10, -1, stand_wall + 8])
+        slab(slot_l, slot_t, stand_grip + 20, stand_slot_r);
+      // Cut the front of the sleeve down so the lower display edge stays visible.
+      translate([stand_wall + 10, -1, stand_wall + stand_lip])
         cube([slot_l - 20, stand_wall + 2, stand_grip]);
+    }
+
+    // Engraved motifs on the rear. The face they land on is NOT the sleeve's
+    // back wall - the hull buries that - but the plane the hull leaves between
+    // the base's back edge and the top of the sleeve. Confirmed against the
+    // rendered STL: one planar strip, normal (0, 0.95, 0.32).
+    for (i = [0:2])
+      translate([stand_icon_x[i], (rear_y0 + rear_y1) / 2, (rear_z0 + rear_z1) / 2])
+        rotate([0, 0, 180]) rotate([90 - rear_lean, 0, 0])
+          engrave(stand_icons[i], stand_icon_mm);
   }
 }
 
@@ -406,6 +503,79 @@ module plunger() {
 
 module plungers() {
   for (i = [0 : 2]) translate([i * (plunger_flange_w + 3), 0, 0]) plunger();
+}
+
+/* ----------------------------------------------------------- glyph library */
+
+// Each glyph is drawn in a 100 x 100 box centred on the origin, so scaling by
+// size / 100 puts a `size` mm motif on the origin. Kept as primitives rather
+// than imported SVG so the file stays self-contained and parametric.
+
+module g_sun() {
+  circle(d = 36);
+  for (i = [0:7]) rotate(i * 45)
+    hull() { translate([26, 0]) circle(d = 7); translate([45, 0]) circle(d = 7); }
+}
+
+module g_moon() {
+  difference() { circle(r = 36); translate([15, 7]) circle(r = 30); }
+}
+
+module g_star() {
+  polygon([for (i = [0:15]) let(r = i % 2 == 0 ? 46 : 20, a = 90 + i * 22.5)
+            [r * cos(a), r * sin(a)]]);
+}
+
+module g_pentacle() {
+  pts = [for (i = [0:4]) let(a = 90 + i * 144) [28.25 * cos(a), 28.25 * sin(a)]];
+  difference() { circle(r = 47); circle(r = 39.5); }
+  for (i = [0:4]) hull() {
+    translate(pts[i]) circle(d = 7.5);
+    translate(pts[(i + 1) % 5]) circle(d = 7.5);
+  }
+}
+
+module g_cup() {
+  intersection() {
+    translate([0, 24]) scale([24, 26]) circle(r = 1, $fn = 96);
+    translate([0, -6]) square([60, 60], center = true);
+  }
+  translate([0, -9]) square([9, 18], center = true);
+  hull() for (t = [-1, 1]) translate([t * 14.25, -21.5]) circle(d = 7.5);
+}
+
+module g_sword() {
+  polygon([[0, 42], [6, 26], [6, -4], [-6, -4], [-6, 26]]);
+  hull() for (t = [-1, 1]) translate([t * 20, -7.75]) circle(d = 8);
+  translate([0, -21.5]) square([9, 20], center = true);
+  translate([0, -37]) circle(d = 14);
+}
+
+// The sparked wand, chosen 2026-09-19: a staff and a four-point spark. The
+// budding staff of the Rider-Waite pip read as a plant, so it was dropped.
+module g_wand() {
+  hull() for (t = [-1, 1]) translate([0, t * 19 - 14]) circle(d = 10);
+  polygon([for (i = [0:7]) let(r = i % 2 == 0 ? 17 : 6, a = 90 + i * 45)
+            [r * cos(a), 26 + r * sin(a)]]);
+}
+
+module glyph(name) {
+  if (name == "sun") g_sun();
+  else if (name == "moon") g_moon();
+  else if (name == "star") g_star();
+  else if (name == "pentacle") g_pentacle();
+  else if (name == "cup") g_cup();
+  else if (name == "sword") g_sword();
+  else if (name == "wand") g_wand();
+  else assert(false, str("unknown glyph: ", name));
+}
+
+// A glyph as a solid to subtract. Local +z is the OUTWARD normal of the face it
+// lands on, so the solid runs from the surface down to engrave_d, and stands
+// 0.01 mm proud of it so the cut never leaves a coincident face.
+module engrave(name, size) {
+  translate([0, 0, -engrave_d])
+    linear_extrude(engrave_d + 0.01) scale(size / 100) glyph(name);
 }
 
 /* ----------------------------------------------------------------- render */

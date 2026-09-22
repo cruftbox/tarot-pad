@@ -47,8 +47,10 @@ The settings screen has these items:
   48 hours.
 - **Battery**: voltage and charge percentage from the fuel gauge.
 
-Settings close on their own after 60 seconds. The deck and interval are saved
-in flash and survive a power loss.
+Settings close on their own after 60 seconds, except while a computer has the
+board's serial port open (for example `pio device monitor`): then they stay
+open until you exit. The deck and interval are saved in flash and survive a
+power loss.
 
 The board draws cards from a shuffled order, so all 78 appear before any card
 repeats. Neither board has a real-time clock, so "every 24 hours" means 24 hours
@@ -68,8 +70,9 @@ pio device monitor           # serial log at 115200
 
 **To reflash a unit that is already running**, press A first. In deep sleep the
 board's USB serial port disappears, and the settings screen keeps it awake for
-60 seconds, which is long enough to start an upload. The COM port number may
-change between wakes.
+60 seconds, which is long enough to start an upload. Opening a serial monitor
+while settings is up keeps the board awake for as long as the monitor stays
+open. The COM port number may change between wakes.
 
 ### Other build environments
 
@@ -99,9 +102,13 @@ DC on 10. EPD reset and busy are not connected.
 The firmware expects this layout:
 
 ```
-/decks/<deck name>/cards.csv     index,name,keyword
+/decks/<deck name>/cards.csv     index,name,keyword,titled
 /decks/<deck name>/00.raw ... 77.raw
 ```
+
+Under the art the device prints the card's name and keyword. `titled` is 1 for
+a card whose name is already printed in its artwork: the device then shows only
+the keyword. If the column is missing or 0, the name is shown.
 
 Each `.raw` file is 128 x 224 pixels, 1 bit per pixel, with rows top to
 bottom, each row padded to a whole byte, the most significant bit leftmost,
@@ -110,8 +117,11 @@ Decks appear in alphabetical order, and up to 16 are supported.
 
 ### Building the decks
 
-The images are generated on your computer with two Python scripts in `tools/`.
 You need Python 3.9 or newer and Pillow (`pip install pillow`).
+
+The `rws` deck is built from scans on your computer with two Python scripts in
+`tools/`. The other included decks come ready-made (see
+[The included decks](#the-included-decks)).
 
 **1. Download the scans** from Wikimedia Commons. `fetch_scans.py` downloads
 every file in a category at 1280 px wide, and waits and retries when
@@ -119,8 +129,6 @@ Commons rate-limits it.
 
 ```sh
 python tools/fetch_scans.py "Rider-Waite-Smith tarot deck (Geldard)" tools/scans/geldard
-python tools/fetch_scans.py "Vectorized Tarot by Immanuelle" tools/scans/vectorized
-python tools/fetch_scans.py "Sola-Busca tarot deck" tools/scans/solabusca
 ```
 
 **2. Convert them.** Each deck has a CSV in `tools/decks/` that maps card
@@ -129,15 +137,12 @@ each scan to the card's frame, fits it into 128 x 224 without cutting off any
 printed titles or numerals, and thresholds it to black and white.
 
 ```sh
-python tools/convert_cards.py tools/scans/geldard    tools/decks/rws.csv        tools/out/rws        --threshold 100
-python tools/convert_cards.py tools/scans/vectorized tools/decks/vectorized.csv tools/out/vectorized --threshold 100
-python tools/convert_cards.py tools/scans/solabusca  tools/decks/solabusca.csv  tools/out/solabusca  --threshold 140
+python tools/convert_cards.py tools/scans/geldard tools/decks/rws.csv tools/out/rws --threshold 100
 ```
 
-Each output folder gets the `.raw` files and `cards.csv` for the device, plus
+The output folder gets the `.raw` files and `cards.csv` for the device, plus
 `.bmp` copies and a `preview/` folder with a contact sheet (`sheet.png`) for
-checking the results. For the Sola Busca deck the converter warns that it
-cannot find the frame on some scans, and uses the whole scan for those cards.
+checking the results.
 
 **3. Copy to the card.** Copy each deck's `*.raw` and `cards.csv` into
 `/decks/<deck name>/` on the SD card, for example `tools/out/rws` to
@@ -148,25 +153,40 @@ cannot find the frame on some scans, and uses the whole scan for those cards.
 - **rws**: the Rider-Waite-Smith deck, from the Geldard scans on Commons. Its
   keywords are one upright meaning per card. Edit `tools/decks/rws.csv` to
   change them.
-- **vectorized**: Immanuelle's vectorized redraw of the Rider-Waite-Smith deck,
-  with the same names and keywords.
-- **solabusca**: the Sola Busca deck. The trumps keep the names printed on
-  them (Mato, Panfilio, ...), and since they have no established meanings,
-  their keyword is the trump number. The minor arcana keep the deck's own suits
-  in English (Batons, Cups, Swords, Coins) and use the RWS keywords. The suits
-  are mapped onto the RWS suits (Batons to Wands, Coins to Pentacles), so
-  pressing C shows the corresponding card in each deck.
+- **black_ink**: a bold black-and-white woodcut-style deck following the
+  Rider-Waite-Smith designs.
+- **hundred-acre**: a storybook deck of animal characters in light line art.
+- **wonderland**: a deck drawn in the style of Victorian Alice in Wonderland
+  illustrations.
+
+`black_ink`, `hundred-acre` and `wonderland` were generated for this project
+with an image AI and delivered already converted to `.raw`, so they don't go
+through `convert_cards.py`. Their card images are not included in this
+repository, only their deck CSVs in `tools/decks/`, which use the same names and
+keywords as `rws`. All four decks follow RWS card order, so pressing C shows the
+same card in the next deck. Every card in these three decks has its title
+printed in the artwork, so all 78 are marked `titled`. In `rws` only the major
+arcana, aces and court cards are; the 2 to 10 of each suit show just a numeral,
+so the device prints their names.
 
 ### Adding your own deck
 
 1. Put the scans in a folder.
-2. Write a CSV with the header `index,name,keyword,source`: one row per card,
-   where `source` is the scan's filename. Keep indices 0-77 in RWS order (0-21
+2. Write a CSV with the header `index,name,keyword,source,titled`: one row per
+   card, where `source` is the scan's filename and `titled` is 1 if the card's
+   name is printed in the scan (0 or empty otherwise). Keep indices 0-77 in RWS order (0-21
    major arcana, then Wands, Cups, Swords and Pentacles, Ace to King) if you
    want C to land on the matching card.
 3. Run `convert_cards.py` and check `preview/sheet.png`. Adjust `--threshold`
    (a higher value makes the image darker) or try `--dither`. If frame detection
-   crops badly, use `--no-frame-crop`.
+   crops badly, use `--no-frame-crop`. For hand-coloured prints, where a
+   luminance threshold turns coloured areas into solid black, try `--gray max`:
+   it thresholds each pixel's brightest colour channel, so only ink that is dark
+   in every channel stays black and the printed linework survives.
+
+If you already have 128 x 224 images in the `.raw` format, skip the converter:
+put them in `/decks/<deck name>/` with a `cards.csv`
+(`index,name,keyword,titled`).
 
 ## Case and stand
 
@@ -236,6 +256,6 @@ these:
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The card scans come from Wikimedia Commons and are
-not included in this repository. Check each file's license on Commons before
-redistributing converted decks.
+MIT, see [LICENSE](LICENSE). No card images are included in this repository.
+The `rws` scans come from Wikimedia Commons; check each file's license there
+before redistributing converted decks.

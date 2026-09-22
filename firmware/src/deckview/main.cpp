@@ -68,8 +68,9 @@ void render() {
     readCards(deck, cardIdx, card);
   }
   bool artOk = readArt(deck, cardIdx, art);
-  Serial.printf("deck %s (%d cards), card %02d: %s / %s%s\n", deck.c_str(), count, cardIdx,
-                card.name.c_str(), card.keyword.c_str(), artOk ? "" : "  [art missing]");
+  Serial.printf("deck %s (%d cards), card %02d: %s / %s%s%s\n", deck.c_str(), count, cardIdx,
+                card.name.c_str(), card.keyword.c_str(), card.titled ? "  [titled]" : "",
+                artOk ? "" : "  [art missing]");
 
   unsigned long tRead = millis();
   drawCard(display, art, artOk, card);

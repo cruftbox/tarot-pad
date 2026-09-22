@@ -87,15 +87,19 @@ uint8_t nextCard() {
 }
 
 void showCard() {
+  Serial.printf("[%lu ms] showCard\n", millis());
   Card card;
   int count = readCards(decks[deckIdx], rtcCard, card);
   if (count > 0) cardCount = min(count, MAX_CARDS);
   bool artOk = readArt(decks[deckIdx], rtcCard, art);
-  Serial.printf("deck %s card %02d: %s / %s%s\n", decks[deckIdx].c_str(), rtcCard,
-                card.name.c_str(), card.keyword.c_str(), artOk ? "" : "  [art missing]");
+  Serial.printf("deck %s card %02d: %s / %s%s%s\n", decks[deckIdx].c_str(), rtcCard,
+                card.name.c_str(), card.keyword.c_str(), card.titled ? "  [titled]" : "",
+                artOk ? "" : "  [art missing]");
   drawCard(display, art, artOk, card);
   display.setRefreshDelay(REFRESH_DELAY_MS);
+  unsigned long t0 = millis();
   display.display();
+  Serial.printf("[%lu ms] card display() %lu ms\n", millis(), millis() - t0);
 }
 
 void showMessage(const char* msg) {
@@ -197,6 +201,9 @@ void settingsScreen() {
   bool wasA = false, wasB = false, wasC = false;
 
   while (millis() - last < SETTINGS_TIMEOUT_MS) {
+    // Stay awake while a host has the serial port open (DTR set, e.g. a
+    // serial monitor), so the port stays up for flashing and logs.
+    if (Serial) last = millis();
     bool a = digitalRead(BUTTON_A) == LOW, b = digitalRead(BUTTON_B) == LOW, c = digitalRead(BUTTON_C) == LOW;
     if (c && !wasC) return;
     if (a && !wasA) {
@@ -235,8 +242,10 @@ void setup() {
   pinMode(BUTTON_C, INPUT_PULLUP);
   for (gpio_num_t pin : {BUTTON_A, BUTTON_B, BUTTON_C}) rtc_gpio_hold_dis(pin);
 
+  Serial.printf("[%lu ms] boot\n", millis());
   SPI.begin();
   display.begin(THINKINK_GRAYSCALE4);
+  Serial.printf("[%lu ms] display.begin done\n", millis());
   display.setRefreshDelay(REFRESH_DELAY_MS);
   display.setColorBuffer(1, true);
   display.setBlackBuffer(0, true);
@@ -259,6 +268,8 @@ void setup() {
   }
   for (int i = 0; i < deckCount; i++)
     if (decks[i] == savedDeck) deckIdx = i;
+  Serial.printf("[%lu ms] SD ready\n", millis());
+  for (int i = 0; i < deckCount; i++) Serial.printf("deck %d: %s\n", i, decks[i].c_str());
 
   esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
   uint64_t pins = (cause == ESP_SLEEP_WAKEUP_EXT1) ? esp_sleep_get_ext1_wakeup_status() : 0;
@@ -267,6 +278,7 @@ void setup() {
   bool wokeC = pins & (1ULL << BUTTON_C);
   Serial.printf("wake cause %d%s%s%s\n", cause, wokeA ? " A" : "", wokeB ? " B" : "", wokeC ? " C" : "");
   Serial.println("battery " + batteryText());
+  Serial.printf("[%lu ms] battery read\n", millis());
 
   if (wokeA) {
     settingsScreen();

@@ -54,6 +54,7 @@ int readCards(const String& deck, int index, Card& card) {
     if (field(line, pos).toInt() == index) {
       card.name = field(line, pos);
       card.keyword = field(line, pos);
+      card.titled = field(line, pos).toInt() == 1;
     }
   }
   f.close();
@@ -70,8 +71,29 @@ bool readArt(const String& deck, int index, uint8_t* buf) {
   return n == ART_BYTES;
 }
 
+static const int16_t LINE_H = 12;
+
+// Walks `text` the way printWrapped draws it, counting the lines it needs.
+static int wrappedLines(Adafruit_EPD& display, const String& text) {
+  int lines = 0;
+  String rest = text;
+  while (rest.length()) {
+    String line = rest;
+    int16_t x1, y1;
+    uint16_t w, h;
+    display.getTextBounds(line, 0, 0, &x1, &y1, &w, &h);
+    while (w > display.width() && line.lastIndexOf(' ') > 0) {
+      line = line.substring(0, line.lastIndexOf(' '));
+      display.getTextBounds(line, 0, 0, &x1, &y1, &w, &h);
+    }
+    rest = rest.substring(line.length());
+    rest.trim();
+    lines++;
+  }
+  return lines;
+}
+
 int16_t printWrapped(Adafruit_EPD& display, const String& text, int16_t y) {
-  const int16_t lineH = 12;
   String rest = text;
   while (rest.length()) {
     String line = rest;
@@ -86,7 +108,7 @@ int16_t printWrapped(Adafruit_EPD& display, const String& text, int16_t y) {
     display.print(line);
     rest = rest.substring(line.length());
     rest.trim();
-    y += lineH;
+    y += LINE_H;
   }
   return y;
 }
@@ -97,6 +119,13 @@ void drawCard(Adafruit_EPD& display, const uint8_t* art, bool artOk, const Card&
   if (artOk) display.drawBitmap(0, 0, art, ART_W, ART_H, EPD_BLACK);
   display.setTextColor(EPD_BLACK);
   display.setTextSize(1);
-  int16_t y = printWrapped(display, card.name, ART_H + 14);
-  printWrapped(display, card.keyword, y + 10);
+  if (card.titled) {
+    // Only the keyword to place, so centre it in the strip below the art.
+    // The last line needs no leading, hence LINE_H - 4 for the glyph height.
+    int16_t h = wrappedLines(display, card.keyword) * LINE_H - 4;
+    printWrapped(display, card.keyword, ART_H + (display.height() - ART_H - h) / 2);
+  } else {
+    int16_t y = printWrapped(display, card.name, ART_H + 14);
+    printWrapped(display, card.keyword, y + 10);
+  }
 }

@@ -2,7 +2,10 @@
 //
 // SD layout, as written by tools/convert_cards.py:
 //   /decks/<deck>/NN.raw     128x224, 1 = black, MSB first, byte-padded rows
-//   /decks/<deck>/cards.csv  index,name,keyword
+//   /decks/<deck>/cards.csv  index,name,keyword[,titled]
+//
+// titled = 1 means the card's name is already printed in its artwork, so it is
+// not drawn again as text. Missing or 0: the name is drawn.
 #pragma once
 
 #include <Arduino.h>
@@ -15,6 +18,7 @@ const size_t ART_BYTES = ((ART_W + 7) / 8) * ART_H;
 struct Card {
   String name;
   String keyword;
+  bool titled = false;  // name already printed in the art
 };
 
 // Deck folder names found under /decks, sorted; returns how many were stored.
@@ -29,5 +33,6 @@ bool readArt(const String& deck, int index, uint8_t* buf);
 // Draws text centered at `y`, wrapping at spaces; returns the next free y.
 int16_t printWrapped(Adafruit_EPD& display, const String& text, int16_t y);
 
-// Card art in the top ART_H rows, name and keyword below. Does not refresh.
+// Card art in the top ART_H rows, name (unless titled) and keyword below.
+// Does not refresh.
 void drawCard(Adafruit_EPD& display, const uint8_t* art, bool artOk, const Card& card);

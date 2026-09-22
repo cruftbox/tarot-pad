@@ -21,8 +21,8 @@ API = "https://commons.wikimedia.org/w/api.php"
 USER_AGENT = "tarot-pad-fetch-scans/0.1 (https://github.com/cruftbox/tarot-pad)"
 
 
-def http_get(url, retries=6):
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+def http_get(url, retries=6, data=None):
+    req = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT})
     for attempt in range(retries):
         try:
             with urllib.request.urlopen(req, timeout=60) as resp:
@@ -37,7 +37,8 @@ def http_get(url, retries=6):
 
 def api(**params):
     params["format"] = "json"
-    return json.loads(http_get(API + "?" + urllib.parse.urlencode(params)))
+    # POST: 50 long titles in one query overflow the URL limit (HTTP 414).
+    return json.loads(http_get(API, data=urllib.parse.urlencode(params).encode()))
 
 
 def local_name(title):

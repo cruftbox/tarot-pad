@@ -1,79 +1,79 @@
-index,name,keyword,source
-0,The Fool,Beginnings,The Fool (Rider-Waite Smith tarot deck).png
-1,The Magician,Willpower,The Magician (Rider-Waite Smith tarot deck).png
-2,The High Priestess,Intuition,The High Priestess (Rider-Waite Smith tarot deck).png
-3,The Empress,Abundance,The Empress (Rider-Waite Smith tarot deck).png
-4,The Emperor,Authority,The Emperor (Rider-Waite Smith tarot deck).png
-5,The Hierophant,Tradition,The Hierophant (Rider-Waite Smith tarot deck).png
-6,The Lovers,Union,The Lovers (Rider-Waite Smith tarot deck).png
-7,The Chariot,Victory,The Chariot (Rider-Waite Smith tarot deck).png
-8,Strength,Courage,Strength (Rider-Waite Smith tarot deck).png
-9,The Hermit,Solitude,The Hermit (Rider-Waite Smith tarot deck).png
-10,Wheel of Fortune,Cycles,Wheel of Fortune (Rider-Waite Smith tarot deck).png
-11,Justice,Fairness,Justice (Rider-Waite Smith tarot deck).png
-12,The Hanged Man,Surrender,The Hanged Man (Rider-Waite Smith tarot deck).png
-13,Death,Endings,Death (Rider-Waite Smith tarot deck).png
-14,Temperance,Balance,Temperance (Rider-Waite Smith tarot deck).png
-15,The Devil,Bondage,The Devil (Rider-Waite Smith tarot deck).png
-16,The Tower,Upheaval,The Tower (Rider-Waite Smith tarot deck).png
-17,The Star,Hope,The Star (Rider-Waite Smith tarot deck).png
-18,The Moon,Illusion,The Moon (Rider-Waite Smith tarot deck).png
-19,The Sun,Joy,The Sun (Rider-Waite Smith tarot deck).png
-20,Judgement,Rebirth,Judgement (Rider-Waite Smith tarot deck).png
-21,The World,Completion,The World (Rider-Waite Smith tarot deck).png
-22,Ace of Wands,Inspiration,Ace of Wands (Rider-Waite Smith tarot deck).png
-23,Two of Wands,Planning,Two of Wands (Rider-Waite Smith tarot deck).png
-24,Three of Wands,Expansion,Three of Wands (Rider-Waite Smith tarot deck).png
-25,Four of Wands,Celebration,Four of Wands (Rider-Waite Smith tarot deck).png
-26,Five of Wands,Conflict,Five of Wands (Rider-Waite Smith tarot deck).png
-27,Six of Wands,Recognition,Six of Wands (Rider-Waite Smith tarot deck).png
-28,Seven of Wands,Defiance,Seven of Wands (Rider-Waite Smith tarot deck).png
-29,Eight of Wands,Speed,Eight of Wands (Rider-Waite Smith tarot deck).png
-30,Nine of Wands,Resilience,Nine of Wands (Rider-Waite Smith tarot deck).png
-31,Ten of Wands,Burden,Ten of Wands (Rider-Waite Smith tarot deck).png
-32,Page of Wands,Enthusiasm,Page of Wands (Rider-Waite Smith tarot deck).png
-33,Knight of Wands,Adventure,Knight of Wands (Rider-Waite Smith tarot deck).png
-34,Queen of Wands,Confidence,Queen of Wands (Rider-Waite Smith tarot deck).png
-35,King of Wands,Leadership,King of Wands (Rider-Waite Smith tarot deck).png
-36,Ace of Cups,Love,Ace of Cups (Rider-Waite Smith tarot deck).png
-37,Two of Cups,Partnership,Two of Cups (Rider-Waite Smith tarot deck).png
-38,Three of Cups,Friendship,Three of Cups (Rider-Waite Smith tarot deck).png
-39,Four of Cups,Apathy,Four of Cups (Rider-Waite Smith tarot deck).png
-40,Five of Cups,Grief,Five of Cups (Rider-Waite Smith tarot deck).png
-41,Six of Cups,Nostalgia,Six of Cups (Rider-Waite Smith tarot deck).png
-42,Seven of Cups,Fantasy,Seven of Cups (Rider-Waite Smith tarot deck).png
-43,Eight of Cups,Leaving,Eight of Cups (Rider-Waite Smith tarot deck).png
-44,Nine of Cups,Contentment,Nine of Cups (Rider-Waite Smith tarot deck).png
-45,Ten of Cups,Harmony,Ten of Cups (Rider-Waite Smith tarot deck).png
-46,Page of Cups,Curiosity,Page of Cups (Rider-Waite Smith tarot deck).png
-47,Knight of Cups,Romance,Knight of Cups (Rider-Waite Smith tarot deck).png
-48,Queen of Cups,Compassion,Queen of Cups (Rider-Waite Smith tarot deck).png
-49,King of Cups,Composure,King of Cups (Rider-Waite Smith tarot deck).png
-50,Ace of Swords,Clarity,One of Swords (Rider-Waite Smith tarot deck).png
-51,Two of Swords,Stalemate,Two of Swords (Rider-Waite Smith tarot deck).png
-52,Three of Swords,Heartbreak,Three of Swords (Rider-Waite Smith tarot deck).png
-53,Four of Swords,Rest,Four of Swords (Rider-Waite Smith tarot deck).png
-54,Five of Swords,Defeat,Five of Swords (Rider-Waite Smith tarot deck).png
-55,Six of Swords,Transition,Six of Swords (Rider-Waite Smith tarot deck).png
-56,Seven of Swords,Deception,Seven of Swords (Rider-Waite Smith tarot deck).png
-57,Eight of Swords,Restriction,Eight of Swords (Rider-Waite Smith tarot deck).png
-58,Nine of Swords,Anxiety,Nine of Swords (Rider-Waite Smith tarot deck).png
-59,Ten of Swords,Ruin,Ten of Swords (Rider-Waite Smith tarot deck).png
-60,Page of Swords,Vigilance,Page of Swords (Rider-Waite Smith tarot deck).png
-61,Knight of Swords,Haste,Knight of Swords (Rider-Waite Smith tarot deck).png
-62,Queen of Swords,Honesty,Queen of Swords (Rider-Waite Smith tarot deck).png
-63,King of Swords,Intellect,King of Swords (Rider-Waite Smith tarot deck).png
-64,Ace of Pentacles,Prosperity,One of Pentacles (Rider-Waite Smith tarot deck).png
-65,Two of Pentacles,Adaptability,Two of Pentacles (Rider-Waite Smith tarot deck).png
-66,Three of Pentacles,Teamwork,Three of Pentacles (Rider-Waite Smith tarot deck).png
-67,Four of Pentacles,Security,Four of Pentacles (Rider-Waite Smith tarot deck).png
-68,Five of Pentacles,Hardship,Five of Pentacles (Rider-Waite Smith tarot deck).png
-69,Six of Pentacles,Generosity,Six of Pentacles (Rider-Waite Smith tarot deck).png
-70,Seven of Pentacles,Patience,Seven of Pentacles (Rider-Waite Smith tarot deck).png
-71,Eight of Pentacles,Mastery,Eight of Pentacles (Rider-Waite Smith tarot deck).png
-72,Nine of Pentacles,Luxury,Nine of Pentacles (Rider-Waite Smith tarot deck).png
-73,Ten of Pentacles,Legacy,Ten of Pentacles (Rider-Waite Smith tarot deck).png
-74,Page of Pentacles,Ambition,Page of Pentacles (Rider-Waite Smith tarot deck).png
-75,Knight of Pentacles,Diligence,Knight of Pentacles (Rider-Waite Smith tarot deck).png
-76,Queen of Pentacles,Nurturing,Queen of Pentacles (Rider-Waite Smith tarot deck).png
-77,King of Pentacles,Wealth,King of Pentacles (Rider-Waite Smith tarot deck).png
+index,name,keyword,source,titled
+0,The Fool,Beginnings,The Fool (Rider-Waite Smith tarot deck).png,1
+1,The Magician,Willpower,The Magician (Rider-Waite Smith tarot deck).png,1
+2,The High Priestess,Intuition,The High Priestess (Rider-Waite Smith tarot deck).png,1
+3,The Empress,Abundance,The Empress (Rider-Waite Smith tarot deck).png,1
+4,The Emperor,Authority,The Emperor (Rider-Waite Smith tarot deck).png,1
+5,The Hierophant,Tradition,The Hierophant (Rider-Waite Smith tarot deck).png,1
+6,The Lovers,Union,The Lovers (Rider-Waite Smith tarot deck).png,1
+7,The Chariot,Victory,The Chariot (Rider-Waite Smith tarot deck).png,1
+8,Strength,Courage,Strength (Rider-Waite Smith tarot deck).png,1
+9,The Hermit,Solitude,The Hermit (Rider-Waite Smith tarot deck).png,1
+10,Wheel of Fortune,Cycles,Wheel of Fortune (Rider-Waite Smith tarot deck).png,1
+11,Justice,Fairness,Justice (Rider-Waite Smith tarot deck).png,1
+12,The Hanged Man,Surrender,The Hanged Man (Rider-Waite Smith tarot deck).png,1
+13,Death,Endings,Death (Rider-Waite Smith tarot deck).png,1
+14,Temperance,Balance,Temperance (Rider-Waite Smith tarot deck).png,1
+15,The Devil,Bondage,The Devil (Rider-Waite Smith tarot deck).png,1
+16,The Tower,Upheaval,The Tower (Rider-Waite Smith tarot deck).png,1
+17,The Star,Hope,The Star (Rider-Waite Smith tarot deck).png,1
+18,The Moon,Illusion,The Moon (Rider-Waite Smith tarot deck).png,1
+19,The Sun,Joy,The Sun (Rider-Waite Smith tarot deck).png,1
+20,Judgement,Rebirth,Judgement (Rider-Waite Smith tarot deck).png,1
+21,The World,Completion,The World (Rider-Waite Smith tarot deck).png,1
+22,Ace of Wands,Inspiration,Ace of Wands (Rider-Waite Smith tarot deck).png,1
+23,Two of Wands,Planning,Two of Wands (Rider-Waite Smith tarot deck).png,0
+24,Three of Wands,Expansion,Three of Wands (Rider-Waite Smith tarot deck).png,0
+25,Four of Wands,Celebration,Four of Wands (Rider-Waite Smith tarot deck).png,0
+26,Five of Wands,Conflict,Five of Wands (Rider-Waite Smith tarot deck).png,0
+27,Six of Wands,Recognition,Six of Wands (Rider-Waite Smith tarot deck).png,0
+28,Seven of Wands,Defiance,Seven of Wands (Rider-Waite Smith tarot deck).png,0
+29,Eight of Wands,Speed,Eight of Wands (Rider-Waite Smith tarot deck).png,0
+30,Nine of Wands,Resilience,Nine of Wands (Rider-Waite Smith tarot deck).png,0
+31,Ten of Wands,Burden,Ten of Wands (Rider-Waite Smith tarot deck).png,0
+32,Page of Wands,Enthusiasm,Page of Wands (Rider-Waite Smith tarot deck).png,1
+33,Knight of Wands,Adventure,Knight of Wands (Rider-Waite Smith tarot deck).png,1
+34,Queen of Wands,Confidence,Queen of Wands (Rider-Waite Smith tarot deck).png,1
+35,King of Wands,Leadership,King of Wands (Rider-Waite Smith tarot deck).png,1
+36,Ace of Cups,Love,Ace of Cups (Rider-Waite Smith tarot deck).png,1
+37,Two of Cups,Partnership,Two of Cups (Rider-Waite Smith tarot deck).png,0
+38,Three of Cups,Friendship,Three of Cups (Rider-Waite Smith tarot deck).png,0
+39,Four of Cups,Apathy,Four of Cups (Rider-Waite Smith tarot deck).png,0
+40,Five of Cups,Grief,Five of Cups (Rider-Waite Smith tarot deck).png,0
+41,Six of Cups,Nostalgia,Six of Cups (Rider-Waite Smith tarot deck).png,0
+42,Seven of Cups,Fantasy,Seven of Cups (Rider-Waite Smith tarot deck).png,0
+43,Eight of Cups,Leaving,Eight of Cups (Rider-Waite Smith tarot deck).png,0
+44,Nine of Cups,Contentment,Nine of Cups (Rider-Waite Smith tarot deck).png,0
+45,Ten of Cups,Harmony,Ten of Cups (Rider-Waite Smith tarot deck).png,0
+46,Page of Cups,Curiosity,Page of Cups (Rider-Waite Smith tarot deck).png,1
+47,Knight of Cups,Romance,Knight of Cups (Rider-Waite Smith tarot deck).png,1
+48,Queen of Cups,Compassion,Queen of Cups (Rider-Waite Smith tarot deck).png,1
+49,King of Cups,Composure,King of Cups (Rider-Waite Smith tarot deck).png,1
+50,Ace of Swords,Clarity,One of Swords (Rider-Waite Smith tarot deck).png,1
+51,Two of Swords,Stalemate,Two of Swords (Rider-Waite Smith tarot deck).png,0
+52,Three of Swords,Heartbreak,Three of Swords (Rider-Waite Smith tarot deck).png,0
+53,Four of Swords,Rest,Four of Swords (Rider-Waite Smith tarot deck).png,0
+54,Five of Swords,Defeat,Five of Swords (Rider-Waite Smith tarot deck).png,0
+55,Six of Swords,Transition,Six of Swords (Rider-Waite Smith tarot deck).png,0
+56,Seven of Swords,Deception,Seven of Swords (Rider-Waite Smith tarot deck).png,0
+57,Eight of Swords,Restriction,Eight of Swords (Rider-Waite Smith tarot deck).png,0
+58,Nine of Swords,Anxiety,Nine of Swords (Rider-Waite Smith tarot deck).png,0
+59,Ten of Swords,Ruin,Ten of Swords (Rider-Waite Smith tarot deck).png,0
+60,Page of Swords,Vigilance,Page of Swords (Rider-Waite Smith tarot deck).png,1
+61,Knight of Swords,Haste,Knight of Swords (Rider-Waite Smith tarot deck).png,1
+62,Queen of Swords,Honesty,Queen of Swords (Rider-Waite Smith tarot deck).png,1
+63,King of Swords,Intellect,King of Swords (Rider-Waite Smith tarot deck).png,1
+64,Ace of Pentacles,Prosperity,One of Pentacles (Rider-Waite Smith tarot deck).png,1
+65,Two of Pentacles,Adaptability,Two of Pentacles (Rider-Waite Smith tarot deck).png,0
+66,Three of Pentacles,Teamwork,Three of Pentacles (Rider-Waite Smith tarot deck).png,0
+67,Four of Pentacles,Security,Four of Pentacles (Rider-Waite Smith tarot deck).png,0
+68,Five of Pentacles,Hardship,Five of Pentacles (Rider-Waite Smith tarot deck).png,0
+69,Six of Pentacles,Generosity,Six of Pentacles (Rider-Waite Smith tarot deck).png,0
+70,Seven of Pentacles,Patience,Seven of Pentacles (Rider-Waite Smith tarot deck).png,0
+71,Eight of Pentacles,Mastery,Eight of Pentacles (Rider-Waite Smith tarot deck).png,0
+72,Nine of Pentacles,Luxury,Nine of Pentacles (Rider-Waite Smith tarot deck).png,0
+73,Ten of Pentacles,Legacy,Ten of Pentacles (Rider-Waite Smith tarot deck).png,0
+74,Page of Pentacles,Ambition,Page of Pentacles (Rider-Waite Smith tarot deck).png,1
+75,Knight of Pentacles,Diligence,Knight of Pentacles (Rider-Waite Smith tarot deck).png,1
+76,Queen of Pentacles,Nurturing,Queen of Pentacles (Rider-Waite Smith tarot deck).png,1
+77,King of Pentacles,Wealth,King of Pentacles (Rider-Waite Smith tarot deck).png,1

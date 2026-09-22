@@ -19,6 +19,7 @@
 #include <esp_sleep.h>
 
 #include "../common/cards.h"
+#include "../common/carddisplay.h"
 
 // FeatherWing pins, as verified by hwcheck
 #define SD_CS     5
@@ -44,13 +45,6 @@ const uint8_t DEFAULT_INTERVAL = 24;
 const uint32_t SETTINGS_TIMEOUT_MS = 60000;
 const uint32_t SHUFFLE_MAGIC = 0x7A401;
 
-// default_refresh_delay is protected in the driver.
-class CardDisplay : public ThinkInk_290_Grayscale4_FPC7519 {
- public:
-  using ThinkInk_290_Grayscale4_FPC7519::ThinkInk_290_Grayscale4_FPC7519;
-  void setRefreshDelay(uint16_t ms) { default_refresh_delay = ms; }
-};
-
 // Framebuffer in ESP32 RAM (SRAM CS = -1): drawing via the Wing's SPI SRAM cost
 // four SPI transactions per pixel, ~3.9 s for a full screen.
 CardDisplay display(EPD_DC, EPD_RESET, EPD_CS, -1, EPD_BUSY);
@@ -63,6 +57,7 @@ RTC_DATA_ATTR uint8_t rtcOrder[MAX_CARDS];
 RTC_DATA_ATTR uint8_t rtcPos = 0;
 RTC_DATA_ATTR uint8_t rtcCard = 0;
 
+bool panelUp = false;  // panel initialised and still powered
 String decks[MAX_DECKS];
 int deckCount = 0;
 int deckIdx = 0;
@@ -99,6 +94,7 @@ void showCard() {
   display.setRefreshDelay(REFRESH_DELAY_MS);
   unsigned long t0 = millis();
   display.display();
+  panelUp = true;
   Serial.printf("[%lu ms] card display() %lu ms\n", millis(), millis() - t0);
 }
 
@@ -117,6 +113,7 @@ void sleepNow() {
   prefs.end();
   SD.end();
   display.powerDown();
+  panelUp = false;
 
   // Buttons have no external pull-ups, so hold them up through deep sleep or
   // the floating pins wake the board immediately.
@@ -189,7 +186,14 @@ void drawSettings(int cursor, const String& battery) {
   display.print("C exit");
   display.setRefreshDelay(MENU_REFRESH_MS);
   unsigned long t0 = millis();
-  display.display();
+  // The panel stays powered after a draw, so only the first one needs the
+  // driver's ~1.1 s power-up; a redraw goes straight to the pixels.
+  if (panelUp) {
+    display.displayNoPowerUp();
+  } else {
+    display.display();
+    panelUp = true;
+  }
   Serial.printf("settings display() %lu ms\n", millis() - t0);
 }
 
@@ -235,8 +239,10 @@ void settingsScreen() {
 
 void setup() {
   Serial.begin(115200);
+  // Only long enough for a host that is already there: with none attached this
+  // waits in full on every wake, and the port turned up within 400 ms on USB.
   uint32_t t0 = millis();
-  while (!Serial && millis() - t0 < 2000) delay(10);
+  while (!Serial && millis() - t0 < 500) delay(10);
   pinMode(BUTTON_A, INPUT_PULLUP);
   pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);

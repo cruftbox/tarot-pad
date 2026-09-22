@@ -9,6 +9,10 @@ while the board sleeps.
 The decks live on a microSD card, one folder per deck. You can add a deck by
 copying a folder to the card, with no reflashing.
 
+Four decks are set up here: the Rider-Waite-Smith deck, from scans, plus three
+decks drawn for this project, each a complete 78 cards in a different style.
+See [The included decks](#the-included-decks).
+
 ## Hardware
 
 | Part | Adafruit PID | Notes |
@@ -153,11 +157,13 @@ checking the results.
 - **rws**: the Rider-Waite-Smith deck, from the Geldard scans on Commons. Its
   keywords are one upright meaning per card. Edit `tools/decks/rws.csv` to
   change them.
-- **black_ink**: a bold black-and-white woodcut-style deck following the
-  Rider-Waite-Smith designs.
-- **hundred-acre**: a storybook deck of animal characters in light line art.
-- **wonderland**: a deck drawn in the style of Victorian Alice in Wonderland
-  illustrations.
+- **black_ink**: the traditional tarot imagery in a bold black-and-white
+  woodcut style.
+- **hundred-acre**: a storybook deck of animal characters, drawn from the
+  Winnie-the-Pooh stories of 1926-1928, which are in the public domain in the
+  United States.
+- **wonderland**: Alice in Wonderland, from Lewis Carroll's 1865 book, in the
+  style of the Victorian illustrations.
 
 `black_ink`, `hundred-acre` and `wonderland` were generated for this project
 with an image AI and delivered already converted to `.raw`, so they don't go

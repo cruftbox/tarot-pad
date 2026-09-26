@@ -48,7 +48,10 @@ The settings screen has these items:
 
 - **Deck**: which folder on the SD card to draw from.
 - **Interval**: how often a new card is drawn, 6, 12, 24 (the default) or
-  48 hours.
+  48 hours, counted from 4 am. So 24 h is a new card at 4 am every day and
+  12 h is 4 am and 4 pm.
+- **Clock**: the board's current date and time, or "not set". Pressing B here
+  sets the clock from a phone (below).
 - **Battery**: voltage and charge percentage from the fuel gauge.
 
 Settings close on their own after 60 seconds, except while a computer has the
@@ -57,8 +60,30 @@ open until you exit. The deck and interval are saved in flash and survive a
 power loss.
 
 The board draws cards from a shuffled order, so all 78 appear before any card
-repeats. Neither board has a real-time clock, so "every 24 hours" means 24 hours
-since the last wake, not a fixed time of day.
+repeats.
+
+### The clock
+
+There is no real-time clock chip. The ESP32 keeps its own clock running through
+deep sleep, but a power loss (a flat battery, or unplugging it with no battery)
+stops it. The clock is set in one of two ways:
+
+- **When you flash it.** Each build records the building computer's local time,
+  and the first boot after flashing sets the clock from it. It comes out a
+  minute or so behind, the time the build and upload took.
+- **From a phone.** In settings, move to Clock and press B. The board starts an
+  open WiFi network named `Tarot-XXXX` (the end of its MAC address) and shows the
+  name on screen. Join it from a phone; a page should open by itself, and if it
+  does not, browse to the address on screen. Tap **Set tarot clock** and the
+  board takes the phone's local time. WiFi turns off again once the time is set,
+  on C, or after 5 minutes. WiFi is never on otherwise.
+
+The clock keeps local time with no time zone, so after a daylight saving change
+the card changes an hour early or late until the clock is set again. The
+board's own clock also drifts by an amount not yet measured.
+
+With no clock set, the interval counts from the last wake instead, button
+presses included.
 
 ## Firmware
 

@@ -3,7 +3,8 @@
 Cards come either from the device .raw files (--raw, upscaled with nearest
 neighbor so the pixels stay sharp) or from full-size source PNGs (--png,
 downscaled to --width). The deck CSV gives the order: the output for index N
-is NN.png. sheet.png shows every card in index order on a white gutter.
+is NN.png. sheet.png shows every card in index order on a white gutter, and
+README.md shows them as a grid of thumbnails on GitHub.
 
     python tools/build_art.py tools/decks/rws.csv art/rws --raw tools/out/rws --scale 2
     python tools/build_art.py tools/decks/wonderland.csv art/wonderland --png tools/scans/wonderland --width 474
@@ -20,6 +21,22 @@ from raw_to_png import read_raw
 SHEET_COLUMNS = 13
 SHEET_CELL = (128, 224)
 GUTTER = 4
+README_COLUMNS = 6
+README_THUMB = 120
+
+
+def write_readme(out_dir, cards):
+    """Write README.md with a grid of every card, which GitHub shows under the file list."""
+    lines = [f"# {out_dir.name}", "", "[Contact sheet](sheet.png)", "", "<table>"]
+    for start in range(0, len(cards), README_COLUMNS):
+        lines.append("<tr>")
+        for card in cards[start:start + README_COLUMNS]:
+            stem = f"{int(card['index']):02d}"
+            lines.append(f'<td align="center"><a href="{stem}.png"><img src="{stem}.png" '
+                         f'width="{README_THUMB}" alt="{card["name"]}"></a><br>{stem} {card["name"]}</td>')
+        lines.append("</tr>")
+    lines.append("</table>")
+    (out_dir / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main():
@@ -59,6 +76,7 @@ def main():
         sheet.paste(thumb, (x, y))
 
     sheet.save(args.out_dir / "sheet.png", optimize=True)
+    write_readme(args.out_dir, cards)
     print(f"{len(cards)} cards -> {args.out_dir}")
 
 

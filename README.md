@@ -192,9 +192,9 @@ checking the results.
 
 `black_ink`, `hundred-acre` and `wonderland` were generated for this project
 with an image AI and delivered already converted to `.raw`, so they don't go
-through `convert_cards.py`. Their card images are not included in this
+through `convert_cards.py`. Their `.raw` files are not included in this
 repository, only their deck CSVs in `tools/decks/`, which use the same names and
-keywords as `rws`. All four decks follow RWS card order, so pressing C shows the
+keywords as `rws`, and the viewable art in [`art/`](art/). All four decks follow RWS card order, so pressing C shows the
 same card in the next deck. Every card in these three decks has its title
 printed in the artwork, so all 78 are marked `titled`. In `rws` only the major
 arcana, aces and court cards are; the 2 to 10 of each suit show just a numeral,
@@ -218,6 +218,12 @@ so the device prints their names.
 If you already have 128 x 224 images in the `.raw` format, skip the converter:
 put them in `/decks/<deck name>/` with a `cards.csv`
 (`index,name,keyword,titled`).
+
+## Artwork
+
+[`art/`](art/) has every card of the four decks as a PNG you can view on
+GitHub, one folder per deck, plus a contact sheet of each deck. See
+[art/README.md](art/README.md).
 
 ## Case and stand
 
